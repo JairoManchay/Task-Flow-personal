@@ -1,5 +1,8 @@
-import { PlaceholderPage } from '../../../components/layout/PlaceholderPage';
+import { Link } from 'react-router-dom';
+import { ProgressBar } from '../../../components/common/ProgressBar';
+import { useActivityStore } from '../../activities/stores/activityStore';
 
 export function UniversityPage() {
-  return <PlaceholderPage eyebrow="Universidad" title="Cursos" description="Aqui registraremos cursos y veremos sus actividades pendientes, en proceso y completadas." />;
+  const { courses, activities, getProgress } = useActivityStore();
+  return <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"><header className="mb-5 flex items-center justify-between"><div><p className="text-sm font-medium text-teal-700">Universidad</p><h1 className="text-2xl font-semibold">Cursos</h1></div><Link className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white" to="/activities/new">Nueva actividad</Link></header><section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{courses.map((course) => { const courseActivities = activities.filter((activity) => activity.courseId === course.id); const total = courseActivities.length; const done = courseActivities.filter((activity) => activity.status === 'completed').length; return <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" key={course.id}><h2 className="font-semibold">{course.name}</h2><p className="mt-1 text-sm text-slate-500">{total} actividades - {done} completadas</p><div className="mt-4 space-y-2">{courseActivities.slice(0, 4).map((activity) => { const progress = getProgress(activity.id); return <Link className="block rounded-md bg-slate-50 p-3 text-sm" key={activity.id} to={`/activities/${activity.id}`}><strong>{activity.title}</strong><div className="mt-2"><ProgressBar completed={progress.completedSubtasks} total={progress.totalSubtasks} percentage={progress.percentage} /></div></Link>; })}</div></article>; })}{courses.length === 0 ? <p className="text-sm text-slate-500">Crea una actividad universitaria para registrar tu primer curso.</p> : null}</section></div>;
 }

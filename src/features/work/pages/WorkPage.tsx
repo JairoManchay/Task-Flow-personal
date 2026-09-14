@@ -1,5 +1,8 @@
-import { PlaceholderPage } from '../../../components/layout/PlaceholderPage';
+import { Link } from 'react-router-dom';
+import { ProgressBar } from '../../../components/common/ProgressBar';
+import { useActivityStore } from '../../activities/stores/activityStore';
 
 export function WorkPage() {
-  return <PlaceholderPage eyebrow="Trabajo" title="Proyectos" description="Aqui organizaremos proyectos laborales y tareas con etapas, subtareas y revision final." />;
+  const { projects, activities, getProgress } = useActivityStore();
+  return <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"><header className="mb-5 flex items-center justify-between"><div><p className="text-sm font-medium text-teal-700">Trabajo</p><h1 className="text-2xl font-semibold">Proyectos</h1></div><Link className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white" to="/activities/new">Nueva tarea</Link></header><section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{projects.map((project) => { const projectActivities = activities.filter((activity) => activity.projectId === project.id); const inProgress = projectActivities.filter((activity) => activity.status === 'in_progress').length; return <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" key={project.id}><h2 className="font-semibold">{project.name}</h2><p className="mt-1 text-sm text-slate-500">{projectActivities.length} tareas - {inProgress} en proceso</p><div className="mt-4 space-y-2">{projectActivities.slice(0, 4).map((activity) => { const progress = getProgress(activity.id); return <Link className="block rounded-md bg-slate-50 p-3 text-sm" key={activity.id} to={`/activities/${activity.id}`}><strong>{activity.title}</strong><div className="mt-2"><ProgressBar completed={progress.completedSubtasks} total={progress.totalSubtasks} percentage={progress.percentage} /></div></Link>; })}</div></article>; })}{projects.length === 0 ? <p className="text-sm text-slate-500">Crea una actividad laboral para registrar tu primer proyecto.</p> : null}</section></div>;
 }
