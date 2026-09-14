@@ -86,6 +86,36 @@ export const taskFlowRepository = {
     if (remaining === 0 && activity && activity.status !== 'completed' && activity.status !== 'archived') await this.updateStatus(subtask.activityId, 'review');
   },
 
+
+  async restartActivity(activityId: string) {
+    const timestamp = nowIso();
+    await db.transaction('rw', [db.activities, db.subtasks, db.activityHistory], async () => {
+      await db.subtasks.where('activityId').equals(activityId).modify({ isCompleted: false, completedAt: undefined, updatedAt: timestamp });
+      await db.activities.update(activityId, { status: 'in_progress', completedAt: undefined, reviewChecklist: { reviewedSteps: false, confirmedNoPending: false }, updatedAt: timestamp });
+      await addHistory(activityId, 'started', 'Actividad iniciada: checklist reiniciado');
+    });
+  },
+
+  async addStage(activityId: string, title: string) {
+    const timestamp = nowIso();
+    const order = await db.taskStages.where('activityId').equals(activityId).count();
+    await db.taskStages.add({ id: createId(), activityId, title: title.trim(), order, isCollapsed: false, createdAt: timestamp, updatedAt: timestamp });
+    await db.activities.update(activityId, { status: 'in_progress', updatedAt: timestamp });
+    await addHistory(activityId, 'stage_created', `Agregaste la etapa "${title.trim()}"`);
+  },
+
+  async moveSubtask(subtask: Subtask, direction: 'up' | 'down') {
+    const stageSubtasks = await db.subtasks.where('stageId').equals(subtask.stageId).sortBy('order');
+    const currentIndex = stageSubtasks.findIndex((item) => item.id === subtask.id);
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const target = stageSubtasks[targetIndex];
+    if (currentIndex < 0 || !target) return;
+    await db.transaction('rw', db.subtasks, db.activityHistory, async () => {
+      await db.subtasks.update(subtask.id, { order: target.order, updatedAt: nowIso() });
+      await db.subtasks.update(target.id, { order: subtask.order, updatedAt: nowIso() });
+      await addHistory(subtask.activityId, 'subtask_created', `Reordenaste "${subtask.title}"`);
+    });
+  },
   async addSubtask(activityId: string, stageId: string, title: string) {
     const timestamp = nowIso();
     const order = await db.subtasks.where('stageId').equals(stageId).count();
@@ -114,4 +144,5 @@ export const taskFlowRepository = {
     });
   }
 };
+
 
