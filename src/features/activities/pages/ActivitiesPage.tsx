@@ -36,8 +36,9 @@ export function ActivitiesPage() {
             <div className="mt-4"><ProgressBar completed={progress.completedSubtasks} total={progress.totalSubtasks} percentage={progress.percentage} /></div>
           </Link>;
         })}
-        {!isLoading && filtered.length === 0 ? <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No hay actividades con esos filtros.</div> : null}
+        {!isLoading && filtered.length === 0 ? <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">Falta construir tu primera Tarea</div> : null}
       </section>
     </div>
   );
 }
+

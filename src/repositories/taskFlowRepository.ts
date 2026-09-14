@@ -124,6 +124,16 @@ export const taskFlowRepository = {
     await addHistory(activityId, 'subtask_created', `Agregaste "${title.trim()}"`);
   },
 
+
+  async deleteSubtask(subtask: Subtask) {
+    await db.transaction('rw', db.subtasks, db.activities, db.activityHistory, async () => {
+      await db.subtasks.delete(subtask.id);
+      const siblings = await db.subtasks.where('stageId').equals(subtask.stageId).sortBy('order');
+      await Promise.all(siblings.map((item, index) => db.subtasks.update(item.id, { order: index, updatedAt: nowIso() })));
+      await db.activities.update(subtask.activityId, { status: 'in_progress', updatedAt: nowIso() });
+      await addHistory(subtask.activityId, 'subtask_deleted', `Eliminaste "${subtask.title}"`);
+    });
+  },
   async addNote(activityId: string, content: string) {
     const timestamp = nowIso();
     const note: Note = { id: createId(), activityId, content: content.trim(), createdAt: timestamp, updatedAt: timestamp };
@@ -144,5 +154,6 @@ export const taskFlowRepository = {
     });
   }
 };
+
 
 

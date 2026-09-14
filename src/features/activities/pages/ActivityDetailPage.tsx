@@ -21,6 +21,7 @@ export function ActivityDetailPage() {
     addStage,
     addNote,
     moveSubtask,
+    deleteSubtask,
     restartActivity,
     setStatus,
     setReviewCheck,
@@ -71,7 +72,7 @@ export function ActivityDetailPage() {
           <button className="rounded-md border border-violet-200 px-3 py-2 text-sm text-violet-700" onClick={() => setStatus(selectedActivity.id, 'review')}>Pasar a revision</button>
           <button disabled={!canFinish} className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300" onClick={() => setStatus(selectedActivity.id, 'completed')}>Finalizar actividad</button>
           <button className="rounded-md border border-slate-200 px-3 py-2 text-sm" onClick={() => setStatus(selectedActivity.id, 'archived')}>Archivar</button>
-          <button className="rounded-md border border-red-200 px-3 py-2 text-sm text-red-700" onClick={removeActivity}><Trash2 size={16} /></button>
+          <button className="rounded-md border border-red-200 px-3 py-2 text-sm text-red-700" onClick={removeActivity} title="Eliminar actividad"><Trash2 size={16} /></button>
         </div>
       </header>
 
@@ -88,6 +89,7 @@ export function ActivityDetailPage() {
               <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" key={stage.id}>
                 <h2 className="font-semibold">{stage.title} <span className="text-sm font-normal text-slate-500">{done}/{stageSubtasks.length}</span></h2>
                 <div className="mt-3 space-y-2">
+                  {stageSubtasks.length === 0 ? <p className="rounded-md border border-dashed border-slate-300 p-3 text-sm text-slate-500">Falta construir tu primera Tarea</p> : null}
                   {stageSubtasks.map((subtask, index) => (
                     <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3 rounded-md border border-slate-100 p-3 text-sm" key={subtask.id}>
                       <input className="mt-1 h-4 w-4" type="checkbox" checked={subtask.isCompleted} onChange={() => toggleSubtask(subtask)} />
@@ -95,6 +97,7 @@ export function ActivityDetailPage() {
                       <div className="flex gap-1">
                         <button disabled={index === 0} className="rounded-md border border-slate-200 p-1 text-slate-500 disabled:opacity-30" onClick={() => moveSubtask(subtask, 'up')} title="Subir subtarea"><ArrowUp size={15} /></button>
                         <button disabled={index === stageSubtasks.length - 1} className="rounded-md border border-slate-200 p-1 text-slate-500 disabled:opacity-30" onClick={() => moveSubtask(subtask, 'down')} title="Bajar subtarea"><ArrowDown size={15} /></button>
+                        <button className="rounded-md border border-red-200 p-1 text-red-600" onClick={() => deleteSubtask(subtask)} title="Eliminar subtarea"><Trash2 size={15} /></button>
                       </div>
                     </div>
                   ))}
@@ -120,7 +123,7 @@ export function ActivityDetailPage() {
         </section>
       ) : null}
 
-      {tab === 'missing' ? <section className="grid gap-4 md:grid-cols-2"><article className="rounded-lg border border-emerald-200 bg-white p-4"><h2 className="mb-3 flex items-center gap-2 font-semibold text-emerald-700"><CheckCircle2 size={18} />Completado</h2>{completed.map((item) => <p className="py-1 text-sm text-slate-600" key={item.id}>{item.title}</p>)}</article><article className="rounded-lg border border-amber-200 bg-white p-4"><h2 className="mb-3 font-semibold text-amber-700">Te falta</h2>{pending.map((item) => <p className="py-1 text-sm text-slate-700" key={item.id}>{item.title}</p>)}{pending.length === 0 ? <p className="text-sm text-slate-500">No queda nada pendiente. Haz el doble check final.</p> : null}</article></section> : null}
+      {tab === 'missing' ? <section className="grid gap-4 md:grid-cols-2"><article className="rounded-lg border border-emerald-200 bg-white p-4"><h2 className="mb-3 flex items-center gap-2 font-semibold text-emerald-700"><CheckCircle2 size={18} />Completado</h2>{completed.length === 0 ? <p className="text-sm text-slate-500">Aun no completaste tareas.</p> : null}{completed.map((item) => <p className="py-1 text-sm text-slate-600" key={item.id}>{item.title}</p>)}</article><article className="rounded-lg border border-amber-200 bg-white p-4"><h2 className="mb-3 font-semibold text-amber-700">Te falta</h2>{pending.map((item) => <p className="py-1 text-sm text-slate-700" key={item.id}>{item.title}</p>)}{pending.length === 0 ? <p className="text-sm text-slate-500">Falta construir tu primera Tarea o ya no queda nada pendiente.</p> : null}</article></section> : null}
       {tab === 'notes' ? <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><textarea className="min-h-24 w-full rounded-md border border-slate-200 p-3 text-sm" placeholder="Escribe una nota de apoyo" value={note} onChange={(event) => setNote(event.target.value)} /><button className="mt-3 rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white" onClick={() => { void addNote(selectedActivity.id, note); setNote(''); }}>Guardar nota</button><div className="mt-4 space-y-2">{notes.filter((item) => item.activityId === selectedActivity.id).map((item) => <p className="rounded-md bg-slate-50 p-3 text-sm" key={item.id}>{item.content}</p>)}</div></section> : null}
       {tab === 'history' ? <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">{activityHistory.filter((item) => item.activityId === selectedActivity.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((item) => <p className="border-b border-slate-100 py-3 text-sm" key={item.id}><span className="text-slate-400">{new Date(item.createdAt).toLocaleString('es-PE')}</span> - {item.message}</p>)}</section> : null}
     </div>
