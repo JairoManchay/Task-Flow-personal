@@ -4,7 +4,7 @@ import { calculateProgress } from '../../../services/progressService';
 import type { Activity, ActivityDraft, ActivityProgress, AreaType, Subtask } from '../../../types/taskflow';
 
 interface ActivityFilters { text: string; area: 'all' | AreaType; status: 'all' | Activity['status']; }
-interface ActivityStore extends TaskFlowData { filters: ActivityFilters; isLoading: boolean; error?: string; load: () => Promise<void>; createActivity: (draft: ActivityDraft) => Promise<string>; setFilters: (filters: Partial<ActivityFilters>) => void; toggleSubtask: (subtask: Subtask) => Promise<void>; addSubtask: (activityId: string, stageId: string, title: string) => Promise<void>; addNote: (activityId: string, content: string) => Promise<void>; setStatus: (activityId: string, status: Activity['status']) => Promise<void>; restartActivity: (activityId: string) => Promise<void>; addStage: (activityId: string, title: string) => Promise<void>; moveSubtask: (subtask: Subtask, direction: 'up' | 'down') => Promise<void>; deleteSubtask: (subtask: Subtask) => Promise<void>; setReviewCheck: (activityId: string, key: 'reviewedSteps' | 'confirmedNoPending', value: boolean) => Promise<void>; deleteActivity: (activityId: string) => Promise<void>; getProgress: (activityId: string) => ActivityProgress; }
+interface ActivityStore extends TaskFlowData { filters: ActivityFilters; isLoading: boolean; error?: string; load: () => Promise<void>; createActivity: (draft: ActivityDraft) => Promise<string>; setFilters: (filters: Partial<ActivityFilters>) => void; toggleSubtask: (subtask: Subtask) => Promise<void>; addSubtask: (activityId: string, stageId: string, title: string) => Promise<void>; addNote: (activityId: string, content: string) => Promise<void>; setStatus: (activityId: string, status: Activity['status']) => Promise<void>; restartActivity: (activityId: string) => Promise<void>; addStage: (activityId: string, title: string) => Promise<void>; moveSubtask: (subtask: Subtask, direction: 'up' | 'down') => Promise<void>; deleteSubtask: (subtask: Subtask) => Promise<void>; setReviewCheck: (activityId: string, key: 'reviewedSteps' | 'confirmedNoPending', value: boolean) => Promise<void>; deleteActivity: (activityId: string) => Promise<void>; deleteProject: (projectId: string) => Promise<void>; getProgress: (activityId: string) => ActivityProgress; }
 
 const emptyData: TaskFlowData = { courses: [], projects: [], activities: [], taskStages: [], subtasks: [], notes: [], activityHistory: [] };
 
@@ -34,7 +34,9 @@ export const useActivityStore = create<ActivityStore>((set, get) => ({
   async deleteSubtask(subtask) { await taskFlowRepository.deleteSubtask(subtask); await get().load(); },
   async setReviewCheck(activityId, key, value) { await taskFlowRepository.setReviewCheck(activityId, key, value); await get().load(); },
   async deleteActivity(activityId) { await taskFlowRepository.deleteActivity(activityId); await get().load(); },
+  async deleteProject(projectId) { await taskFlowRepository.deleteProject(projectId); await get().load(); },
   getProgress(activityId) { return calculateProgress(get().subtasks.filter((subtask) => subtask.activityId === activityId)); }
 }));
+
 
 

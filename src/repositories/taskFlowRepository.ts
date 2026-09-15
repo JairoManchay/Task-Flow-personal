@@ -152,8 +152,17 @@ export const taskFlowRepository = {
     await db.transaction('rw', [db.activities, db.taskStages, db.subtasks, db.notes, db.activityHistory, db.resourceLinks], async () => {
       await Promise.all([db.activities.delete(activityId), db.taskStages.where('activityId').equals(activityId).delete(), db.subtasks.where('activityId').equals(activityId).delete(), db.notes.where('activityId').equals(activityId).delete(), db.activityHistory.where('activityId').equals(activityId).delete(), db.resourceLinks.where('activityId').equals(activityId).delete()]);
     });
+  },
+
+  async deleteProject(projectId: string) {
+    const relatedActivities = await db.activities.where('projectId').equals(projectId).count();
+    if (relatedActivities > 0) throw new Error('No puedes eliminar un proyecto con tareas asociadas. Elimina primero sus tareas.');
+    await db.projects.delete(projectId);
   }
 };
+
+
+
 
 
 
