@@ -158,9 +158,14 @@ export const taskFlowRepository = {
     const relatedActivities = await db.activities.where('projectId').equals(projectId).count();
     if (relatedActivities > 0) throw new Error('No puedes eliminar un proyecto con tareas asociadas. Elimina primero sus tareas.');
     await db.projects.delete(projectId);
+  },
+
+  async deleteCourse(courseId: string) {
+    const relatedActivities = await db.activities.where('courseId').equals(courseId).count();
+    if (relatedActivities > 0) throw new Error('No puedes eliminar un curso con actividades asociadas. Elimina primero sus actividades.');
+    await db.courses.delete(courseId);
   }
 };
-
 
 
 
